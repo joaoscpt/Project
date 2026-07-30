@@ -1,2 +1,13 @@
-localscript(function)
-buttons_toggles name: [fly]
+LocalScript
+buttons_toggles = {
+fly = false -- começa desligado
+}
+local function alternarFly()
+    botoes.fly = not botoes.fly -- se era false vira true, se era true vira false
+    
+    if botoes.fly == true then
+        print("fly LIGADO")
+    else
+        print("fly DESLIGADO")
+    end
+end
