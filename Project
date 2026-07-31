@@ -1,42 +1,20 @@
--- // BF V7 FINAL | TRAVA 15 STUDS + KILL AURA REAL | 1-2800 //
+-- // BF V8 FINAL - TRAVA REAL + KILL AURA REAL // MAX 2800 //
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-
-local Window = Rayfield:CreateWindow({
-   Name = "BF V7 | Trava + Aura | 1-2800",
-   LoadingTitle = "Não cai mais + Kill Aura",
-   Theme = "Amethyst",
-   ConfigurationSaving = { Enabled = false }
-})
+local Window = Rayfield:CreateWindow({Name = "BF V8 FINAL | NAO CAI + AURA | 1-2800", LoadingTitle = "Fix queda e aura", Theme = "Amethyst", ConfigurationSaving = {Enabled = false}})
 
 getgenv().AutoFarm = false
 getgenv().Bring = true
 getgenv().FarmHeight = 15
 local Player = game.Players.LocalPlayer
-local TweenService = game:GetService("TweenService")
-
-game:GetService("RunService").Stepped:Connect(function()
-    if getgenv().AutoFarm then
-        for _,v in pairs(Player.Character:GetDescendants()) do
-            if v:IsA("BasePart") then v.CanCollide = false end
-        end
-    end
-end)
 
 function GetBestWeapon()
-    local tools = {}
-    for _,v in pairs(Player.Backpack:GetChildren()) do if v:IsA("Tool") then table.insert(tools, v) end end
-    for _,v in pairs(Player.Character:GetChildren()) do if v:IsA("Tool") then table.insert(tools, v) end end
-    for _,t in pairs(tools) do if t.ToolTip == "Melee" then return t.Name end end
-    for _,t in pairs(tools) do if t.ToolTip == "Sword" then return t.Name end end
-    if #tools > 0 then return tools[1].Name end
+    local t = {}
+    for _,v in pairs(Player.Backpack:GetChildren()) do if v:IsA("Tool") then table.insert(t, v) end end
+    for _,v in pairs(Player.Character:GetChildren()) do if v:IsA("Tool") then table.insert(t, v) end end
+    for _,v in pairs(t) do if v.ToolTip == "Melee" then return v.Name end end
+    for _,v in pairs(t) do if v.ToolTip == "Sword" then return v.Name end end
+    if #t > 0 then return t[1].Name end
     return nil
-end
-
-function TweenQuest(CF)
-    local HRP = Player.Character.HumanoidRootPart
-    if (CF.Position - HRP.Position).Magnitude > 8000 then HRP.CFrame = CF * CFrame.new(0,20,0) task.wait(0.6) return end
-    local Tween = TweenService:Create(HRP, TweenInfo.new((CF.Position - HRP.Position).Magnitude/280, Enum.EasingStyle.Linear), {CFrame = CF})
-    Tween:Play() Tween.Completed:Wait()
 end
 
 local QuestTable = {
@@ -69,74 +47,84 @@ function GetQuest()
     return Q
 end
 
-local MainTab = Window:CreateTab("Auto Farm 1-2800", 4483362458)
-local Status = MainTab:CreateLabel("MAX 2800 | Trava 15 Studs + Aura")
+-- KILL AURA LOOP SEPARADO PRA BATER SEM PARAR
+spawn(function()
+    while task.wait(0.08) do
+        if getgenv().AutoFarm then
+            pcall(function()
+                local HRP = Player.Character:FindFirstChild("HumanoidRootPart")
+                if not HRP then return end
+                for _,v in pairs(workspace.Enemies:GetChildren()) do
+                    if v:FindFirstChild("Humanoid") and v:FindFirstChild("HumanoidRootPart") and v.Humanoid.Health > 0 and (v.HumanoidRootPart.Position - HRP.Position).Magnitude < 40 then
+                        v.HumanoidRootPart.Size = Vector3.new(60,60,60)
+                        v.HumanoidRootPart.CanCollide = false
+                        v.Humanoid:ChangeState(14)
+                        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Attack", true)
+                        game:GetService("VirtualUser"):ClickButton1(Vector2.new(0,0))
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+local MainTab = Window:CreateTab("Auto Farm 2800", 4483362458)
+local Status = MainTab:CreateLabel("MAX 2800 | TRAVADO + AURA")
 
 MainTab:CreateToggle({
-   Name = "Auto Farm Level [TRAVA + KILL AURA]",
+   Name = "Auto Farm Level [TRAVA + AURA REAL]",
    CurrentValue = false,
-   Flag = "AutoFarmV7",
+   Flag = "AutoFarmV8",
    Callback = function(Value)
         getgenv().AutoFarm = Value
+        local Hum = Player.Character:FindFirstChild("Humanoid")
+        if Value then Hum.PlatformStand = true else Hum.PlatformStand = false end
+
         while getgenv().AutoFarm do task.wait()
             pcall(function()
                 local Data = GetQuest()
                 local Best = GetBestWeapon()
+                Status:Set("Lv."..Player.Data.Level.Value.." | "..Data.Mob.." | "..(Best or "Auto"))
 
                 if not Player.PlayerGui.Main.Quest.Visible then
-                    TweenQuest(Data.Pos)
-                    task.wait(0.3)
+                    local HRP = Player.Character.HumanoidRootPart
+                    if (Data.Pos.Position - HRP.Position).Magnitude > 8000 then HRP.CFrame = Data.Pos * CFrame.new(0,20,0) task.wait(0.5)
+                    else
+                        game:GetService("TweenService"):Create(HRP, TweenInfo.new((Data.Pos.Position - HRP.Position).Magnitude/280, Enum.EasingStyle.Linear), {CFrame = Data.Pos}):Play()
+                        task.wait(1)
+                    end
                     game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", Data.Quest, Data.N)
                 end
 
-                local EnemyFound = nil
                 for _,Enemy in pairs(workspace.Enemies:GetChildren()) do
-                    if Enemy.Name == Data.Mob and Enemy:FindFirstChild("Humanoid") and Enemy.Humanoid.Health > 0 then EnemyFound = Enemy break end
-                end
-
-                if EnemyFound then
-                    -- BRING
-                    if getgenv().Bring then
+                    if Enemy.Name == Data.Mob and Enemy:FindFirstChild("Humanoid") and Enemy.Humanoid.Health > 0 then
+                        -- BRING
                         for _,Other in pairs(workspace.Enemies:GetChildren()) do
-                            if Other.Name == Data.Mob and (Other.HumanoidRootPart.Position - EnemyFound.HumanoidRootPart.Position).Magnitude < 400 then
-                                Other.HumanoidRootPart.CFrame = EnemyFound.HumanoidRootPart.CFrame
+                            if Other.Name == Data.Mob and (Other.HumanoidRootPart.Position - Enemy.HumanoidRootPart.Position).Magnitude < 400 then
+                                Other.HumanoidRootPart.CFrame = Enemy.HumanoidRootPart.CFrame
                                 Other.HumanoidRootPart.CanCollide = false
-                                Other.Humanoid.WalkSpeed = 0
-                                Other.Humanoid.JumpPower = 0
                             end
                         end
+
+                        -- TRAVA EM CIMA - NÃO CAI
+                        repeat
+                            if not getgenv().AutoFarm or not Enemy.Parent or Enemy.Humanoid.Health <= 0 then break end
+                            local HRP = Player.Character.HumanoidRootPart
+                            HRP.CFrame = Enemy.HumanoidRootPart.CFrame * CFrame.new(0, getgenv().FarmHeight, 0)
+                            HRP.Velocity = Vector3.new(0,0,0)
+                            HRP.AssemblyLinearVelocity = Vector3.new(0,0,0)
+                            Player.Character.Humanoid:ChangeState(11)
+
+                            local Tool = Player.Backpack:FindFirstChild(Best) or Player.Character:FindFirstChild(Best)
+                            if Tool then Player.Character.Humanoid:EquipTool(Tool) end
+                            task.wait()
+                        until Enemy.Humanoid.Health <= 0 or not getgenv().AutoFarm
                     end
-
-                    -- TRAVA 15 STUDS EM CIMA - NÃO CAI MAIS
-                    repeat
-                        if not getgenv().AutoFarm then break end
-                        if not EnemyFound.Parent or EnemyFound.Humanoid.Health <= 0 then break end
-
-                        local AbovePos = EnemyFound.HumanoidRootPart.CFrame * CFrame.new(0, getgenv().FarmHeight, 0)
-                        Player.Character.HumanoidRootPart.CFrame = AbovePos
-                        Player.Character.HumanoidRootPart.Velocity = Vector3.new(0,0,0)
-                        Player.Character.Humanoid:ChangeState(11)
-
-                        local Tool = Player.Backpack:FindFirstChild(Best) or Player.Character:FindFirstChild(Best)
-                        if Tool then Player.Character.Humanoid:EquipTool(Tool) end
-
-                        -- KILL AURA REAL - BATE EM TODOS PERTO
-                        for _,CloseMob in pairs(workspace.Enemies:GetChildren()) do
-                            if CloseMob:FindFirstChild("HumanoidRootPart") and (CloseMob.HumanoidRootPart.Position - Player.Character.HumanoidRootPart.Position).Magnitude < 25 then
-                                game:GetService("VirtualUser"):CaptureController()
-                                game:GetService("VirtualUser"):ClickButton1(Vector2.new(0,0))
-                                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Attack", true)
-                            end
-                        end
-
-                        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
-                        task.wait()
-                    until EnemyFound.Humanoid.Health <= 0 or not getgenv().AutoFarm
                 end
             end)
         end
+        Player.Character.Humanoid.PlatformStand = false
    end,
 })
 
-MainTab:CreateToggle({Name = "Bring Mob", CurrentValue = true, Flag = "BringV7", Callback = function(v) getgenv().Bring = v end})
-MainTab:CreateSlider({Name = "Altura Travada", Range = {10,25}, Increment = 1, Suffix = "Studs", CurrentValue = 15, Flag = "HeightV7", Callback = function(v) getgenv().FarmHeight = v end})
+MainTab:CreateSlider({Name = "Altura", Range = {8,20}, Increment = 1, Suffix = "Studs", CurrentValue = 15, Flag = "HeightV8", Callback = function(v) getgenv().FarmHeight = v end})
