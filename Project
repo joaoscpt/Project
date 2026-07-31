@@ -1,21 +1,20 @@
--- // BF V4 FIX - RAYFIELD + SMART PORTAL + SELECT TOOL //
+-- // BF UNIVERSAL 1-2800 | RAYFIELD V5 FINAL MAX 2800 | PORTAL FIX + 15 STUDS //
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "BF Fix V4 | 1-2800 + Portal Fix",
-   LoadingTitle = "Corrigido: Portal e Tool",
+   Name = "BF Universal 1-2800 | MAX 2800 FIX",
+   LoadingTitle = "Sea1: 0-700 | Sea2: 700-1500 | Sea3: 1500-2800",
    Theme = "Amethyst",
-   ConfigurationSaving = { Enabled = true, FolderName = "BF_FixV4", FileName = "Fix" }
+   ConfigurationSaving = { Enabled = false }
 })
 
 getgenv().AutoFarm = false
 getgenv().Bring = true
+getgenv().KillAura = true
 getgenv().FarmHeight = 15
-getgenv().SelectedWeapon = nil
 local Player = game.Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
 
--- Noclip pra não travar
 game:GetService("RunService").Stepped:Connect(function()
     if getgenv().AutoFarm then
         for _,v in pairs(Player.Character:GetDescendants()) do
@@ -24,69 +23,73 @@ game:GetService("RunService").Stepped:Connect(function()
     end
 end)
 
+function GetBestWeapon()
+    local tools = {}
+    for _,v in pairs(Player.Backpack:GetChildren()) do if v:IsA("Tool") then table.insert(tools, v) end end
+    for _,v in pairs(Player.Character:GetChildren()) do if v:IsA("Tool") then table.insert(tools, v) end end
+    for _,t in pairs(tools) do if t.ToolTip == "Melee" then return t.Name end end
+    for _,t in pairs(tools) do if t.ToolTip == "Sword" then return t.Name end end
+    if #tools > 0 then return tools[1].Name end
+    return nil
+end
+
 function SmartTween(CF)
     local HRP = Player.Character.HumanoidRootPart
-    local Dist = (CF.Position - HRP.Position).Magnitude
-    -- SE FOR MUITO LONGE (Navio Assombrado, Haunted, etc) USA BYPASS
-    if Dist > 8000 then
-        Rayfield:Notify({Title = "Ilha muito longe!", Content = "Usando Portal Bypass pro "..tostring(math.floor(Dist)).." studs", Duration = 3})
-        HRP.CFrame = CF * CFrame.new(0,20,0)
-        task.wait(0.8)
+    if (CF.Position - HRP.Position).Magnitude > 8000 then
+        HRP.CFrame = CF * CFrame.new(0,30,0)
+        task.wait(0.7)
         return
     end
-    local Tween = TweenService:Create(HRP, TweenInfo.new(Dist/280, Enum.EasingStyle.Linear), {CFrame = CF})
-    Tween:Play()
-    Tween.Completed:Wait()
-end
-
-function EquipWeapon()
-    if not getgenv().SelectedWeapon then return end
-    -- Procura na mochila e no char
-    local Tool = Player.Backpack:FindFirstChild(getgenv().SelectedWeapon) or Player.Character:FindFirstChild(getgenv().SelectedWeapon)
-    if Tool then
-        Player.Character.Humanoid:EquipTool(Tool)
-        -- Ativa Haki
-        if not Player.Character:FindFirstChild("HasBuso") then
-            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
-        end
-    end
-end
-
-function Attack()
-    local Char = Player.Character
-    local Tool = Char:FindFirstChildOfClass("Tool")
-    if Tool then
-        Tool:Activate()
-        game:GetService("VirtualUser"):ClickButton1(Vector2.new(0,0))
-        -- Fast Attack real
-        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Attack", true)
-    end
+    local Tween = TweenService:Create(HRP, TweenInfo.new((CF.Position - HRP.Position).Magnitude/300, Enum.EasingStyle.Linear), {CFrame = CF})
+    Tween:Play() Tween.Completed:Wait()
 end
 
 local QuestTable = {
     {L = 0, Mob = "Bandit", Quest = "BanditQuest1", N = 1, Pos = CFrame.new(1060,16,1547)},
     {L = 15, Mob = "Monkey", Quest = "JungleQuest", N = 1, Pos = CFrame.new(-1602,36,152)},
+    {L = 30, Mob = "Gorilla", Quest = "JungleQuest", N = 2, Pos = CFrame.new(-1602,36,152)},
     {L = 60, Mob = "Pirate", Quest = "BuggyQuest1", N = 1, Pos = CFrame.new(-1140,4,3831)},
+    {L = 90, Mob = "Brute", Quest = "BuggyQuest1", N = 2, Pos = CFrame.new(-1140,4,3831)},
     {L = 120, Mob = "Desert Bandit", Quest = "DesertQuest", N = 1, Pos = CFrame.new(896,6,4390)},
+    {L = 150, Mob = "Desert Officer", Quest = "DesertQuest", N = 2, Pos = CFrame.new(896,6,4390)},
+    {L = 180, Mob = "Snow Bandit", Quest = "SnowQuest", N = 1, Pos = CFrame.new(1386,87,-1296)},
     {L = 250, Mob = "Chief Petty Officer", Quest = "MarineQuest2", N = 1, Pos = CFrame.new(-5036,28,4324)},
     {L = 300, Mob = "Sky Bandit", Quest = "SkyQuest", N = 1, Pos = CFrame.new(-4842,717,-2623)},
+    {L = 325, Mob = "Dark Master", Quest = "SkyQuest", N = 2, Pos = CFrame.new(-4842,717,-2623)},
     {L = 375, Mob = "Prisoner", Quest = "PrisonerQuest", N = 1, Pos = CFrame.new(5308,0,474)},
+    {L = 400, Mob = "Dangerous Prisoner", Quest = "PrisonerQuest", N = 2, Pos = CFrame.new(5308,0,474)},
+    {L = 450, Mob = "Toga Warrior", Quest = "ColosseumQuest", N = 1, Pos = CFrame.new(-1580,7,-2986)},
+    {L = 500, Mob = "Military Soldier", Quest = "MagmaQuest", N = 1, Pos = CFrame.new(-5317,12,4747)},
+    {L = 550, Mob = "Fishman Warrior", Quest = "FishmanQuest", N = 1, Pos = CFrame.new(61122,18,1568)},
+    {L = 600, Mob = "God's Guard", Quest = "SkyExp1Quest", N = 1, Pos = CFrame.new(-7863,5545,-380)},
     {L = 650, Mob = "Galley Pirate", Quest = "FountainQuest", N = 1, Pos = CFrame.new(5259,38,4050)},
     {L = 700, Mob = "Raider", Quest = "Area1Quest", N = 1, Pos = CFrame.new(-424,72,1836)},
+    {L = 750, Mob = "Mercenary", Quest = "Area1Quest", N = 2, Pos = CFrame.new(-424,72,1836)},
     {L = 800, Mob = "Swan Pirate", Quest = "Area2Quest", N = 1, Pos = CFrame.new(632,72,918)},
+    {L = 900, Mob = "Marine Lieutenant", Quest = "MarineQuest3", N = 1, Pos = CFrame.new(-2442,73,-3219)},
     {L = 1000, Mob = "Zombie", Quest = "ZombieQuest", N = 1, Pos = CFrame.new(-951,172,607)},
     {L = 1100, Mob = "Snow Trooper", Quest = "SnowMountainQuest", N = 1, Pos = CFrame.new(607,401,-5370)},
+    {L = 1200, Mob = "Lab Subordinate", Quest = "IceSideQuest", N = 1, Pos = CFrame.new(-5497,48,-794)},
     {L = 1250, Mob = "Magma Ninja", Quest = "FireSideQuest", N = 1, Pos = CFrame.new(-5428,15,-5298)},
-    -- AQUI TAVA O BUG DO LEVEL 1300 - CURSED SHIP
     {L = 1300, Mob = "Ship Deckhand", Quest = "ShipQuest1", N = 1, Pos = CFrame.new(1037,125,32911)},
     {L = 1325, Mob = "Ship Engineer", Quest = "ShipQuest1", N = 2, Pos = CFrame.new(1037,125,32911)},
     {L = 1350, Mob = "Ship Steward", Quest = "ShipQuest2", N = 1, Pos = CFrame.new(968,125,33245)},
     {L = 1375, Mob = "Ship Officer", Quest = "ShipQuest2", N = 2, Pos = CFrame.new(968,125,33245)},
     {L = 1425, Mob = "Arctic Warrior", Quest = "FrostQuest", N = 1, Pos = CFrame.new(5667,28,-6484)},
+    {L = 1450, Mob = "Water Fighter", Quest = "FountainQuest", N = 2, Pos = CFrame.new(5259,38,4049)},
     {L = 1500, Mob = "Pirate Millionaire", Quest = "PiratePortQuest", N = 1, Pos = CFrame.new(-290,44,5580)},
-    {L = 2000, Mob = "Musketeer Pirate", Quest = "DeepForestQuest3", N = 1, Pos = CFrame.new(-13234,331,-7631)},
+    {L = 1525, Mob = "Pistol Billionaire", Quest = "PiratePortQuest", N = 2, Pos = CFrame.new(-290,44,5580)},
+    {L = 1575, Mob = "Dragon Crew Warrior", Quest = "AmazonQuest", N = 1, Pos = CFrame.new(5834,82,-3295)},
+    {L = 1700, Mob = "Marine Commodore", Quest = "MarineTreeQuest", N = 1, Pos = CFrame.new(-13234,331,-7631)},
+    {L = 1775, Mob = "Fishman Raider", Quest = "DeepForestQuest", N = 1, Pos = CFrame.new(-13234,331,-7631)},
+    {L = 1900, Mob = "Forest Pirate", Quest = "DeepForestQuest2", N = 1, Pos = CFrame.new(-13234,331,-7631)},
+    {L = 2100, Mob = "Reborn Skeleton", Quest = "HauntedQuest1", N = 1, Pos = CFrame.new(-9499,142,5564)},
+    {L = 2300, Mob = "Cookie Crafter", Quest = "CakeQuest1", N = 1, Pos = CFrame.new(-2021,37,-12028)},
     {L = 2500, Mob = "Isle Outlaw", Quest = "TikiQuest1", N = 1, Pos = CFrame.new(-16539,55,712)},
+    {L = 2600, Mob = "Isle Boy", Quest = "TikiQuest2", N = 1, Pos = CFrame.new(-16539,55,712)},
     {L = 2700, Mob = "Sun-kissed Warrior", Quest = "TikiQuest3", N = 1, Pos = CFrame.new(-16539,55,712)},
+    {L = 2750, Mob = "Isle Champion", Quest = "TikiQuest3", N = 2, Pos = CFrame.new(-16539,55,712)},
+    {L = 2800, Mob = "Tiki Elite", Quest = "TikiQuest4", N = 1, Pos = CFrame.new(-16539,55,712)},
 }
 
 function GetQuest()
@@ -96,75 +99,52 @@ function GetQuest()
     return Q
 end
 
-local MainTab = Window:CreateTab("Auto Farm Fix", 4483362458)
-local WeaponTab = Window:CreateTab("Arma / Tool", 4483362458)
+local MainTab = Window:CreateTab("Auto Farm Level", 4483362458)
+MainTab:CreateSection("Level 1 até 2800 - 15 Studs + Bring + Portal Fix")
 
-MainTab:CreateSection("Farm 1-2800 com Portal Fix")
-
-local Status = MainTab:CreateLabel("Selecione sua arma primeiro!")
-
--- DROPDOWN DE ARMAS
-local function GetWeapons()
-    local list = {}
-    for _,v in pairs(Player.Backpack:GetChildren()) do if v:IsA("Tool") then table.insert(list, v.Name) end end
-    for _,v in pairs(Player.Character:GetChildren()) do if v:IsA("Tool") then table.insert(list, v.Name) end end
-    return list
-end
-
-local WeaponDropdown = WeaponTab:CreateDropdown({
-   Name = "Selecionar Tool (Melee / Espada / Gun)",
-   Options = GetWeapons(),
-   CurrentOption = "",
-   Flag = "WeaponFlag",
-   Callback = function(Option)
-        getgenv().SelectedWeapon = Option[1] or Option
-        Status:Set("Arma selecionada: "..getgenv().SelectedWeapon)
-   end,
-})
-
-WeaponTab:CreateButton({Name = "Atualizar Lista de Armas", Callback = function() WeaponDropdown:Refresh(GetWeapons()) end})
-
-WeaponTab:CreateSlider({Name = "Altura", Range = {0,30}, Increment = 1, Suffix = "Studs", CurrentValue = 15, Flag = "Height", Callback = function(v) getgenv().FarmHeight = v end})
+local Status = MainTab:CreateLabel("Pronto pra farmar até 2800")
 
 MainTab:CreateToggle({
-   Name = "Ativar Auto Farm com Tool",
+   Name = "Auto Farm Level [1-2800]",
    CurrentValue = false,
-   Flag = "AutoFarmFix",
+   Flag = "AutoFarm2800",
    Callback = function(Value)
         getgenv().AutoFarm = Value
         while getgenv().AutoFarm do task.wait()
             pcall(function()
-                if not getgenv().SelectedWeapon then Status:Set("ERRO: Selecione uma arma na aba Arma / Tool!") return end
                 local Data = GetQuest()
-                Status:Set("Missão: "..Data.Mob.." | Level "..Player.Data.Level.Value)
-
+                local Best = GetBestWeapon()
+                Status:Set("Lv."..Player.Data.Level.Value.." | "..Data.Mob.." | Arma: "..(Best or "Auto").." | MAX 2800")
                 if not Player.PlayerGui.Main.Quest.Visible then
                     SmartTween(Data.Pos)
-                    task.wait(0.5)
+                    task.wait(0.4)
                     game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", Data.Quest, Data.N)
                 end
-
                 for _,Enemy in pairs(workspace.Enemies:GetChildren()) do
-                    if Enemy.Name == Data.Mob and Enemy:FindFirstChild("Humanoid") and Enemy.Humanoid.Health > 0 then
+                    if Enemy.Name == Data.Mob and Enemy.Humanoid.Health > 0 then
                         local HRP = Enemy.HumanoidRootPart
                         if getgenv().Bring then
                             HRP.CanCollide = false
                             Enemy.Humanoid.WalkSpeed = 0
-                            HRP.CFrame = HRP.CFrame
                             for _,Other in pairs(workspace.Enemies:GetChildren()) do
                                 if Other.Name == Data.Mob and (Other.HumanoidRootPart.Position - HRP.Position).Magnitude < 400 then
                                     Other.HumanoidRootPart.CFrame = HRP.CFrame
                                 end
                             end
                         end
-                        -- 15 studs acima
-                        local Pos = HRP.CFrame * CFrame.new(0, getgenv().FarmHeight, 2)
-                        Player.Character.HumanoidRootPart.CFrame = Pos
-                        EquipWeapon()
-                        Attack()
+                        Player.Character.HumanoidRootPart.CFrame = HRP.CFrame * CFrame.new(0, getgenv().FarmHeight, 2)
+                        local Tool = Player.Backpack:FindFirstChild(Best) or Player.Character:FindFirstChild(Best)
+                        if Tool then Player.Character.Humanoid:EquipTool(Tool) Tool:Activate() end
+                        game:GetService("VirtualUser"):ClickButton1(Vector2.new(0,0))
+                        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
                     end
                 end
             end)
         end
    end,
 })
+
+MainTab:CreateToggle({Name = "Bring Mob", CurrentValue = true, Flag = "Bring", Callback = function(v) getgenv().Bring = v end})
+MainTab:CreateSlider({Name = "Altura 15 Studs", Range = {5,30}, Increment = 1, Suffix = "Studs", CurrentValue = 15, Flag = "Height", Callback = function(v) getgenv().FarmHeight = v end})
+
+Rayfield:Notify({Title = "Fix 2800 Carregado", Content = "Agora vai até 2800 e sem aba de arma", Duration = 4})
