@@ -1,9 +1,9 @@
--- // BF V10 ULTRA FIX - NO FALL REAL + BRING TRAVADO + SOCO // MAX 2800 //
+-- // BF V11 ULTIMA TENTATIVA - NO FALL BV + BRING ANCORADO + FAST ATTACK REAL // MAX 2800 //
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local Window = Rayfield:CreateWindow({Name = "BF V10 | FIX QUEDA E SOCO | 1-2800", LoadingTitle = "Ancora + Hitbox 100", Theme = "Amethyst", ConfigurationSaving = {Enabled = false}})
+local Window = Rayfield:CreateWindow({Name = "BF V11 FINAL FIX | 1-2800", LoadingTitle = "Soco + Hitbox + No Fall", Theme = "Amethyst", ConfigurationSaving = {Enabled = false}})
 
 getgenv().AutoFarm = false
-getgenv().FarmHeight = 8 -- 8 pega soco, 15 não pega
+getgenv().FarmHeight = 8
 local Player = game.Players.LocalPlayer
 
 function GetBestWeapon()
@@ -15,6 +15,46 @@ function GetBestWeapon()
     if #t > 0 then return t[1].Name end return nil
 end
 
+function NoFall(state)
+    local HRP = Player.Character:FindFirstChild("HumanoidRootPart")
+    if not HRP then return end
+    if state then
+        if HRP:FindFirstChild("NoFallBV") then HRP.NoFallBV:Destroy() end
+        if HRP:FindFirstChild("NoFallBG") then HRP.NoFallBG:Destroy() end
+        local BV = Instance.new("BodyVelocity")
+        BV.Name = "NoFallBV"
+        BV.Velocity = Vector3.new(0,0,0)
+        BV.MaxForce = Vector3.new(9e9,9e9)
+        BV.Parent = HRP
+        local BG = Instance.new("BodyGyro")
+        BG.Name = "NoFallBG"
+        BG.MaxTorque = Vector3.new(9e9,9e9)
+        BG.CFrame = HRP.CFrame
+        BG.Parent = HRP
+    else
+        if HRP:FindFirstChild("NoFallBV") then HRP.NoFallBV:Destroy() end
+        if HRP:FindFirstChild("NoFallBG") then HRP.NoFallBG:Destroy() end
+    end
+end
+
+function FastAttack()
+    local Char = Player.Character
+    local Tool = Char:FindFirstChildOfClass("Tool")
+    if Tool then
+        Tool:Activate()
+        pcall(function()
+            local Combat = require(Player.PlayerScripts:WaitForChild("CombatFramework"))
+            local Controller = Combat.activeController
+            Controller.timeToNextAttack = 0
+            Controller.hitboxMagnitude = 60
+            Controller:attack()
+        end)
+        game:GetService("VirtualUser"):CaptureController()
+        game:GetService("VirtualUser"):ClickButton1(Vector2.new(0,0))
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Attack", true)
+    end
+end
+
 local QuestTable = {
     {L = 0, Mob = "Bandit", Quest = "BanditQuest1", N = 1, Pos = CFrame.new(1060,16,1547)},
     {L = 60, Mob = "Pirate", Quest = "BuggyQuest1", N = 1, Pos = CFrame.new(-1140,4,3831)},
@@ -23,10 +63,10 @@ local QuestTable = {
     {L = 700, Mob = "Raider", Quest = "Area1Quest", N = 1, Pos = CFrame.new(-424,72,1836)},
     {L = 800, Mob = "Swan Pirate", Quest = "Area2Quest", N = 1, Pos = CFrame.new(632,72,918)},
     {L = 1000, Mob = "Zombie", Quest = "ZombieQuest", N = 1, Pos = CFrame.new(-951,172,607)},
+    {L = 1100, Mob = "Snow Trooper", Quest = "SnowMountainQuest", N = 1, Pos = CFrame.new(607,401,-5370)},
     {L = 1300, Mob = "Ship Deckhand", Quest = "ShipQuest1", N = 1, Pos = CFrame.new(1037,125,32911)},
     {L = 1500, Mob = "Pirate Millionaire", Quest = "PiratePortQuest", N = 1, Pos = CFrame.new(-290,44,5580)},
     {L = 2500, Mob = "Isle Outlaw", Quest = "TikiQuest1", N = 1, Pos = CFrame.new(-16539,55,712)},
-    {L = 2600, Mob = "Isle Boy", Quest = "TikiQuest2", N = 1, Pos = CFrame.new(-16539,55,712)},
     {L = 2700, Mob = "Sun-kissed Warrior", Quest = "TikiQuest3", N = 1, Pos = CFrame.new(-16539,55,712)},
     {L = 2800, Mob = "Tiki Elite", Quest = "TikiQuest4", N = 1, Pos = CFrame.new(-16539,55,712)},
 }
@@ -41,9 +81,9 @@ end
 local MainTab = Window:CreateTab("Auto Farm 2800", 4483362458)
 
 MainTab:CreateToggle({
-   Name = "Auto Farm [NO FALL + SOCO REAL]",
+   Name = "Auto Farm Level [FINAL]",
    CurrentValue = false,
-   Flag = "AutoFarmV10",
+   Flag = "AutoFarmV11",
    Callback = function(Value)
         getgenv().AutoFarm = Value
         while getgenv().AutoFarm do task.wait()
@@ -53,6 +93,7 @@ MainTab:CreateToggle({
                 local HRP = Player.Character.HumanoidRootPart
 
                 if not Player.PlayerGui.Main.Quest.Visible then
+                    NoFall(false)
                     HRP.Anchored = false
                     if (Data.Pos.Position - HRP.Position).Magnitude > 8000 then HRP.CFrame = Data.Pos * CFrame.new(0,20,0) task.wait(0.5)
                     else game:GetService("TweenService"):Create(HRP, TweenInfo.new((Data.Pos.Position - HRP.Position).Magnitude/280, Enum.EasingStyle.Linear), {CFrame = Data.Pos}):Play() task.wait(1) end
@@ -63,55 +104,46 @@ MainTab:CreateToggle({
                 for _,v in pairs(workspace.Enemies:GetChildren()) do if v.Name == Data.Mob and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then FirstMob = v break end end
 
                 if FirstMob then
-                    local Anchor = FirstMob.HumanoidRootPart.CFrame -- POSIÇÃO FIXA NO CHÃO
+                    local Anchor = FirstMob.HumanoidRootPart.CFrame
+                    NoFall(true)
+
+                    -- HAKI SÓ UMA VEZ
+                    if not Player.Character:FindFirstChild("HasBuso") then
+                        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
+                        task.wait(0.5)
+                    end
 
                     repeat
                         if not getgenv().AutoFarm or not FirstMob.Parent or FirstMob.Humanoid.Health <= 0 then break end
 
-                        -- TRAVA VOCÊ NO AR - NÃO CAI
-                        HRP.Anchored = true
                         HRP.CFrame = Anchor * CFrame.new(0, getgenv().FarmHeight, 0)
 
-                        -- TRAVA TODOS OS MOBS NA ANCORA + HITBOX 100
+                        -- TRAVA E HITBOX EM TODOS
                         for _,Mob in pairs(workspace.Enemies:GetChildren()) do
-                            if Mob.Name == Data.Mob and Mob:FindFirstChild("HumanoidRootPart") and Mob.Humanoid.Health > 0 then
-                                if (Mob.HumanoidRootPart.Position - Anchor.Position).Magnitude < 500 then
-                                    Mob.HumanoidRootPart.Anchored = true
-                                    Mob.HumanoidRootPart.CFrame = Anchor
-                                    Mob.HumanoidRootPart.Size = Vector3.new(100,100,100)
-                                    Mob.HumanoidRootPart.Transparency = 1
-                                    Mob.HumanoidRootPart.CanCollide = false
-                                    Mob.Humanoid.WalkSpeed = 0
-                                    Mob.Humanoid.JumpPower = 0
-                                end
+                            if Mob.Name == Data.Mob and Mob:FindFirstChild("HumanoidRootPart") and Mob.Humanoid.Health > 0 and (Mob.HumanoidRootPart.Position - Anchor.Position).Magnitude < 500 then
+                                Mob.HumanoidRootPart.Anchored = true
+                                Mob.HumanoidRootPart.CFrame = Anchor
+                                Mob.HumanoidRootPart.Size = Vector3.new(100,100,100)
+                                Mob.HumanoidRootPart.CanCollide = false
+                                Mob.Humanoid.WalkSpeed = 0
+                                Mob.Humanoid.JumpPower = 0
                             end
                         end
 
-                        -- SOCO REAL
                         local Tool = Player.Backpack:FindFirstChild(Best) or Player.Character:FindFirstChild(Best)
-                        if Tool then
-                            Player.Character.Humanoid:EquipTool(Tool)
-                            Tool:Activate()
-                            game:GetService("VirtualUser"):CaptureController()
-                            game:GetService("VirtualUser"):ClickButton1(Vector2.new(0,0))
-                            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Attack", true)
-                            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
-                        end
+                        if Tool then Player.Character.Humanoid:EquipTool(Tool) end
+
+                        FastAttack()
                         task.wait(0.05)
                     until FirstMob.Humanoid.Health <= 0 or not getgenv().AutoFarm
 
-                    -- DESANCORA DEPOIS DE MATAR
+                    NoFall(false)
                     HRP.Anchored = false
-                    for _,Mob in pairs(workspace.Enemies:GetChildren()) do
-                        if Mob.Name == Data.Mob and Mob:FindFirstChild("HumanoidRootPart") then
-                            Mob.HumanoidRootPart.Anchored = false
-                        end
-                    end
+                    for _,Mob in pairs(workspace.Enemies:GetChildren()) do if Mob:FindFirstChild("HumanoidRootPart") then Mob.HumanoidRootPart.Anchored = false end end
                 end
             end)
         end
+        NoFall(false)
         Player.Character.HumanoidRootPart.Anchored = false
    end,
 })
-
-MainTab:CreateSlider({Name = "Altura (8 pega soco)", Range = {5,15}, Increment = 1, Suffix = "Studs", CurrentValue = 8, Flag = "HeightV10", Callback = function(v) getgenv().FarmHeight = v end})
