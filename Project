@@ -1,11 +1,9 @@
--- // BF V9 FINAL - BRING TRAVADO + HITBOX 100 + SOCO REAL // MAX 2800 //
+-- // BF V10 ULTRA FIX - NO FALL REAL + BRING TRAVADO + SOCO // MAX 2800 //
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local Window = Rayfield:CreateWindow({Name = "BF V9 | Bring Fixo + Hitbox 100 | 1-2800", LoadingTitle = "Fix soco e bring", Theme = "Amethyst", ConfigurationSaving = {Enabled = false}})
+local Window = Rayfield:CreateWindow({Name = "BF V10 | FIX QUEDA E SOCO | 1-2800", LoadingTitle = "Ancora + Hitbox 100", Theme = "Amethyst", ConfigurationSaving = {Enabled = false}})
 
 getgenv().AutoFarm = false
-getgenv().Bring = true
-getgenv().FarmHeight = 15
-getgenv().Hitbox = 100
+getgenv().FarmHeight = 8 -- 8 pega soco, 15 não pega
 local Player = game.Players.LocalPlayer
 
 function GetBestWeapon()
@@ -19,24 +17,17 @@ end
 
 local QuestTable = {
     {L = 0, Mob = "Bandit", Quest = "BanditQuest1", N = 1, Pos = CFrame.new(1060,16,1547)},
-    {L = 15, Mob = "Monkey", Quest = "JungleQuest", N = 1, Pos = CFrame.new(-1602,36,152)},
     {L = 60, Mob = "Pirate", Quest = "BuggyQuest1", N = 1, Pos = CFrame.new(-1140,4,3831)},
     {L = 120, Mob = "Desert Bandit", Quest = "DesertQuest", N = 1, Pos = CFrame.new(896,6,4390)},
     {L = 250, Mob = "Chief Petty Officer", Quest = "MarineQuest2", N = 1, Pos = CFrame.new(-5036,28,4324)},
-    {L = 300, Mob = "Sky Bandit", Quest = "SkyQuest", N = 1, Pos = CFrame.new(-4842,717,-2623)},
-    {L = 375, Mob = "Prisoner", Quest = "PrisonerQuest", N = 1, Pos = CFrame.new(5308,0,474)},
-    {L = 650, Mob = "Galley Pirate", Quest = "FountainQuest", N = 1, Pos = CFrame.new(5259,38,4050)},
     {L = 700, Mob = "Raider", Quest = "Area1Quest", N = 1, Pos = CFrame.new(-424,72,1836)},
     {L = 800, Mob = "Swan Pirate", Quest = "Area2Quest", N = 1, Pos = CFrame.new(632,72,918)},
     {L = 1000, Mob = "Zombie", Quest = "ZombieQuest", N = 1, Pos = CFrame.new(-951,172,607)},
-    {L = 1100, Mob = "Snow Trooper", Quest = "SnowMountainQuest", N = 1, Pos = CFrame.new(607,401,-5370)},
     {L = 1300, Mob = "Ship Deckhand", Quest = "ShipQuest1", N = 1, Pos = CFrame.new(1037,125,32911)},
-    {L = 1350, Mob = "Ship Steward", Quest = "ShipQuest2", N = 1, Pos = CFrame.new(968,125,33245)},
     {L = 1500, Mob = "Pirate Millionaire", Quest = "PiratePortQuest", N = 1, Pos = CFrame.new(-290,44,5580)},
     {L = 2500, Mob = "Isle Outlaw", Quest = "TikiQuest1", N = 1, Pos = CFrame.new(-16539,55,712)},
     {L = 2600, Mob = "Isle Boy", Quest = "TikiQuest2", N = 1, Pos = CFrame.new(-16539,55,712)},
     {L = 2700, Mob = "Sun-kissed Warrior", Quest = "TikiQuest3", N = 1, Pos = CFrame.new(-16539,55,712)},
-    {L = 2750, Mob = "Isle Champion", Quest = "TikiQuest3", N = 2, Pos = CFrame.new(-16539,55,712)},
     {L = 2800, Mob = "Tiki Elite", Quest = "TikiQuest4", N = 1, Pos = CFrame.new(-16539,55,712)},
 }
 
@@ -48,24 +39,21 @@ function GetQuest()
 end
 
 local MainTab = Window:CreateTab("Auto Farm 2800", 4483362458)
-local Status = MainTab:CreateLabel("MAX 2800 | Bring Fixo + Hitbox 100")
 
 MainTab:CreateToggle({
-   Name = "Auto Farm Level [BRING FIXO + AURA REAL]",
+   Name = "Auto Farm [NO FALL + SOCO REAL]",
    CurrentValue = false,
-   Flag = "AutoFarmV9",
+   Flag = "AutoFarmV10",
    Callback = function(Value)
         getgenv().AutoFarm = Value
-        if Value then Player.Character.Humanoid.PlatformStand = true else Player.Character.Humanoid.PlatformStand = false end
-
         while getgenv().AutoFarm do task.wait()
             pcall(function()
                 local Data = GetQuest()
                 local Best = GetBestWeapon()
-                Status:Set("Lv."..Player.Data.Level.Value.." | "..Data.Mob.." | Hitbox: "..getgenv().Hitbox)
+                local HRP = Player.Character.HumanoidRootPart
 
                 if not Player.PlayerGui.Main.Quest.Visible then
-                    local HRP = Player.Character.HumanoidRootPart
+                    HRP.Anchored = false
                     if (Data.Pos.Position - HRP.Position).Magnitude > 8000 then HRP.CFrame = Data.Pos * CFrame.new(0,20,0) task.wait(0.5)
                     else game:GetService("TweenService"):Create(HRP, TweenInfo.new((Data.Pos.Position - HRP.Position).Magnitude/280, Enum.EasingStyle.Linear), {CFrame = Data.Pos}):Play() task.wait(1) end
                     game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", Data.Quest, Data.N)
@@ -75,33 +63,31 @@ MainTab:CreateToggle({
                 for _,v in pairs(workspace.Enemies:GetChildren()) do if v.Name == Data.Mob and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then FirstMob = v break end end
 
                 if FirstMob then
-                    local Anchor = FirstMob.HumanoidRootPart.CFrame -- ANCORA FIXA, NÃO SEGUE O MOB
+                    local Anchor = FirstMob.HumanoidRootPart.CFrame -- POSIÇÃO FIXA NO CHÃO
 
                     repeat
                         if not getgenv().AutoFarm or not FirstMob.Parent or FirstMob.Humanoid.Health <= 0 then break end
-                        local HRP = Player.Character.HumanoidRootPart
 
-                        -- TRAVA EM CIMA DA ANCORA
+                        -- TRAVA VOCÊ NO AR - NÃO CAI
+                        HRP.Anchored = true
                         HRP.CFrame = Anchor * CFrame.new(0, getgenv().FarmHeight, 0)
-                        HRP.Velocity = Vector3.new(0,0,0)
-                        Player.Character.Humanoid:ChangeState(11)
 
-                        -- BRING TRAVADO + HITBOX 100 + PARADO
+                        -- TRAVA TODOS OS MOBS NA ANCORA + HITBOX 100
                         for _,Mob in pairs(workspace.Enemies:GetChildren()) do
                             if Mob.Name == Data.Mob and Mob:FindFirstChild("HumanoidRootPart") and Mob.Humanoid.Health > 0 then
                                 if (Mob.HumanoidRootPart.Position - Anchor.Position).Magnitude < 500 then
+                                    Mob.HumanoidRootPart.Anchored = true
                                     Mob.HumanoidRootPart.CFrame = Anchor
-                                    Mob.HumanoidRootPart.Size = Vector3.new(getgenv().Hitbox, getgenv().Hitbox, getgenv().Hitbox)
+                                    Mob.HumanoidRootPart.Size = Vector3.new(100,100,100)
                                     Mob.HumanoidRootPart.Transparency = 1
                                     Mob.HumanoidRootPart.CanCollide = false
                                     Mob.Humanoid.WalkSpeed = 0
                                     Mob.Humanoid.JumpPower = 0
-                                    Mob.Humanoid:ChangeState(14)
                                 end
                             end
                         end
 
-                        -- KILL AURA REAL - EQUIPA E SOCA
+                        -- SOCO REAL
                         local Tool = Player.Backpack:FindFirstChild(Best) or Player.Character:FindFirstChild(Best)
                         if Tool then
                             Player.Character.Humanoid:EquipTool(Tool)
@@ -109,17 +95,23 @@ MainTab:CreateToggle({
                             game:GetService("VirtualUser"):CaptureController()
                             game:GetService("VirtualUser"):ClickButton1(Vector2.new(0,0))
                             game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Attack", true)
+                            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
                         end
-
-                        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
                         task.wait(0.05)
                     until FirstMob.Humanoid.Health <= 0 or not getgenv().AutoFarm
+
+                    -- DESANCORA DEPOIS DE MATAR
+                    HRP.Anchored = false
+                    for _,Mob in pairs(workspace.Enemies:GetChildren()) do
+                        if Mob.Name == Data.Mob and Mob:FindFirstChild("HumanoidRootPart") then
+                            Mob.HumanoidRootPart.Anchored = false
+                        end
+                    end
                 end
             end)
         end
-        Player.Character.Humanoid.PlatformStand = false
+        Player.Character.HumanoidRootPart.Anchored = false
    end,
 })
 
-MainTab:CreateSlider({Name = "Altura", Range = {8,20}, Increment = 1, Suffix = "Studs", CurrentValue = 15, Flag = "HeightV9", Callback = function(v) getgenv().FarmHeight = v end})
-MainTab:CreateSlider({Name = "Hitbox", Range = {50,150}, Increment = 10, Suffix = "Size", CurrentValue = 100, Flag = "HitboxV9", Callback = function(v) getgenv().Hitbox = v end})
+MainTab:CreateSlider({Name = "Altura (8 pega soco)", Range = {5,15}, Increment = 1, Suffix = "Studs", CurrentValue = 8, Flag = "HeightV10", Callback = function(v) getgenv().FarmHeight = v end})
