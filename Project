@@ -1,9 +1,9 @@
--- // BF V6 FINAL | TWEEN NO MOB + KILL AURA FIX | MAX 2800 //
+-- // BF V7 FINAL | TRAVA 15 STUDS + KILL AURA REAL | 1-2800 //
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "BF V6 | Tween Mob + Aura | 1-2800",
-   LoadingTitle = "Tween 15 Studs + Kill Aura",
+   Name = "BF V7 | Trava + Aura | 1-2800",
+   LoadingTitle = "Não cai mais + Kill Aura",
    Theme = "Amethyst",
    ConfigurationSaving = { Enabled = false }
 })
@@ -32,24 +32,11 @@ function GetBestWeapon()
     return nil
 end
 
--- TWEEN PRA MISSÃO (com bypass se for muito longe tipo Cursed Ship)
 function TweenQuest(CF)
     local HRP = Player.Character.HumanoidRootPart
-    if (CF.Position - HRP.Position).Magnitude > 8000 then
-        HRP.CFrame = CF * CFrame.new(0,20,0)
-        task.wait(0.6)
-        return
-    end
+    if (CF.Position - HRP.Position).Magnitude > 8000 then HRP.CFrame = CF * CFrame.new(0,20,0) task.wait(0.6) return end
     local Tween = TweenService:Create(HRP, TweenInfo.new((CF.Position - HRP.Position).Magnitude/280, Enum.EasingStyle.Linear), {CFrame = CF})
     Tween:Play() Tween.Completed:Wait()
-end
-
--- TWEEN PRA FICAR EM CIMA DO MOB (SEM TP)
-function TweenMob(CF)
-    local HRP = Player.Character.HumanoidRootPart
-    local Dist = (CF.Position - HRP.Position).Magnitude
-    local Tween = TweenService:Create(HRP, TweenInfo.new(Dist/150, Enum.EasingStyle.Linear), {CFrame = CF})
-    Tween:Play()
 end
 
 local QuestTable = {
@@ -66,6 +53,7 @@ local QuestTable = {
     {L = 1000, Mob = "Zombie", Quest = "ZombieQuest", N = 1, Pos = CFrame.new(-951,172,607)},
     {L = 1100, Mob = "Snow Trooper", Quest = "SnowMountainQuest", N = 1, Pos = CFrame.new(607,401,-5370)},
     {L = 1300, Mob = "Ship Deckhand", Quest = "ShipQuest1", N = 1, Pos = CFrame.new(1037,125,32911)},
+    {L = 1350, Mob = "Ship Steward", Quest = "ShipQuest2", N = 1, Pos = CFrame.new(968,125,33245)},
     {L = 1500, Mob = "Pirate Millionaire", Quest = "PiratePortQuest", N = 1, Pos = CFrame.new(-290,44,5580)},
     {L = 2500, Mob = "Isle Outlaw", Quest = "TikiQuest1", N = 1, Pos = CFrame.new(-16539,55,712)},
     {L = 2600, Mob = "Isle Boy", Quest = "TikiQuest2", N = 1, Pos = CFrame.new(-16539,55,712)},
@@ -81,60 +69,74 @@ function GetQuest()
     return Q
 end
 
-local MainTab = Window:CreateTab("Auto Farm", 4483362458)
-local Status = MainTab:CreateLabel("MAX 2800 | Tween + Kill Aura")
+local MainTab = Window:CreateTab("Auto Farm 1-2800", 4483362458)
+local Status = MainTab:CreateLabel("MAX 2800 | Trava 15 Studs + Aura")
 
 MainTab:CreateToggle({
-   Name = "Auto Farm Level [TWEEN 15 STUDS + KILL AURA]",
+   Name = "Auto Farm Level [TRAVA + KILL AURA]",
    CurrentValue = false,
-   Flag = "AutoFarmV6",
+   Flag = "AutoFarmV7",
    Callback = function(Value)
         getgenv().AutoFarm = Value
         while getgenv().AutoFarm do task.wait()
             pcall(function()
                 local Data = GetQuest()
                 local Best = GetBestWeapon()
-                Status:Set("Lv."..Player.Data.Level.Value.." | "..Data.Mob.." | "..Best.." | 2800")
 
                 if not Player.PlayerGui.Main.Quest.Visible then
                     TweenQuest(Data.Pos)
-                    task.wait(0.4)
+                    task.wait(0.3)
                     game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", Data.Quest, Data.N)
                 end
 
+                local EnemyFound = nil
                 for _,Enemy in pairs(workspace.Enemies:GetChildren()) do
-                    if Enemy.Name == Data.Mob and Enemy:FindFirstChild("Humanoid") and Enemy.Humanoid.Health > 0 then
-                        -- BRING
-                        if getgenv().Bring then
-                            for _,Other in pairs(workspace.Enemies:GetChildren()) do
-                                if Other.Name == Data.Mob and (Other.HumanoidRootPart.Position - Enemy.HumanoidRootPart.Position).Magnitude < 400 then
-                                    Other.HumanoidRootPart.CFrame = Enemy.HumanoidRootPart.CFrame
-                                    Other.HumanoidRootPart.CanCollide = false
-                                    Other.Humanoid.WalkSpeed = 0
-                                end
+                    if Enemy.Name == Data.Mob and Enemy:FindFirstChild("Humanoid") and Enemy.Humanoid.Health > 0 then EnemyFound = Enemy break end
+                end
+
+                if EnemyFound then
+                    -- BRING
+                    if getgenv().Bring then
+                        for _,Other in pairs(workspace.Enemies:GetChildren()) do
+                            if Other.Name == Data.Mob and (Other.HumanoidRootPart.Position - EnemyFound.HumanoidRootPart.Position).Magnitude < 400 then
+                                Other.HumanoidRootPart.CFrame = EnemyFound.HumanoidRootPart.CFrame
+                                Other.HumanoidRootPart.CanCollide = false
+                                Other.Humanoid.WalkSpeed = 0
+                                Other.Humanoid.JumpPower = 0
+                            end
+                        end
+                    end
+
+                    -- TRAVA 15 STUDS EM CIMA - NÃO CAI MAIS
+                    repeat
+                        if not getgenv().AutoFarm then break end
+                        if not EnemyFound.Parent or EnemyFound.Humanoid.Health <= 0 then break end
+
+                        local AbovePos = EnemyFound.HumanoidRootPart.CFrame * CFrame.new(0, getgenv().FarmHeight, 0)
+                        Player.Character.HumanoidRootPart.CFrame = AbovePos
+                        Player.Character.HumanoidRootPart.Velocity = Vector3.new(0,0,0)
+                        Player.Character.Humanoid:ChangeState(11)
+
+                        local Tool = Player.Backpack:FindFirstChild(Best) or Player.Character:FindFirstChild(Best)
+                        if Tool then Player.Character.Humanoid:EquipTool(Tool) end
+
+                        -- KILL AURA REAL - BATE EM TODOS PERTO
+                        for _,CloseMob in pairs(workspace.Enemies:GetChildren()) do
+                            if CloseMob:FindFirstChild("HumanoidRootPart") and (CloseMob.HumanoidRootPart.Position - Player.Character.HumanoidRootPart.Position).Magnitude < 25 then
+                                game:GetService("VirtualUser"):CaptureController()
+                                game:GetService("VirtualUser"):ClickButton1(Vector2.new(0,0))
+                                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Attack", true)
                             end
                         end
 
-                        -- TWEEN EM CIMA DO MOB (NÃO TP)
-                        repeat
-                            if not getgenv().AutoFarm then break end
-                            local Above = Enemy.HumanoidRootPart.CFrame * CFrame.new(0, getgenv().FarmHeight, 2)
-                            TweenMob(Above)
-
-                            -- EQUIPA E KILL AURA
-                            local Tool = Player.Backpack:FindFirstChild(Best) or Player.Character:FindFirstChild(Best)
-                            if Tool then Player.Character.Humanoid:EquipTool(Tool) Tool:Activate() end
-                            game:GetService("VirtualUser"):ClickButton1(Vector2.new(0,0))
-                            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Attack", true)
-                            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
-                            task.wait(0.1)
-                        until Enemy.Humanoid.Health <= 0 or not Enemy.Parent
-                    end
+                        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
+                        task.wait()
+                    until EnemyFound.Humanoid.Health <= 0 or not getgenv().AutoFarm
                 end
             end)
         end
    end,
 })
 
-MainTab:CreateToggle({Name = "Bring Mob", CurrentValue = true, Flag = "BringV6", Callback = function(v) getgenv().Bring = v end})
-MainTab:CreateSlider({Name = "Altura (Studs)", Range = {5,30}, Increment = 1, Suffix = "Studs", CurrentValue = 15, Flag = "HeightV6", Callback = function(v) getgenv().FarmHeight = v end})
+MainTab:CreateToggle({Name = "Bring Mob", CurrentValue = true, Flag = "BringV7", Callback = function(v) getgenv().Bring = v end})
+MainTab:CreateSlider({Name = "Altura Travada", Range = {10,25}, Increment = 1, Suffix = "Studs", CurrentValue = 15, Flag = "HeightV7", Callback = function(v) getgenv().FarmHeight = v end})
